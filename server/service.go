@@ -327,19 +327,28 @@ func NewService(cfg config.ServerCommonConf) (svr *Service, err error) {
 }
 
 func (svr *Service) Run() {
+	/// nat hole punching listener  (NAT打洞)
 	if svr.rc.NatHoleController != nil {
 		go svr.rc.NatHoleController.Run()
 	}
+
+	/// kcp listener
 	if svr.kcpListener != nil {
 		go svr.HandleListener(svr.kcpListener)
 	}
+
+	/// TODO: quic listener ??
 	if svr.quicListener != nil {
 		go svr.HandleQUICListener(svr.quicListener)
 	}
 
+	/// websocket listener
 	go svr.HandleListener(svr.websocketListener)
+
+	/// tls listener
 	go svr.HandleListener(svr.tlsListener)
 
+	/// tcp listener
 	svr.HandleListener(svr.listener)
 }
 
@@ -409,6 +418,7 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn) {
 func (svr *Service) HandleListener(l net.Listener) {
 	// Listen for incoming connections from client.
 	for {
+		/// 创建ctx 和 c， 传递给后面的协程 go runc(ctx, c)
 		c, err := l.Accept()
 		if err != nil {
 			log.Warn("Listener for incoming connections from client closed")
@@ -433,6 +443,7 @@ func (svr *Service) HandleListener(l net.Listener) {
 
 		// Start a new goroutine to handle connection.
 		go func(ctx context.Context, frpConn net.Conn) {
+			/// TCPMux: tcp连接复用，多个请求共享tcp连接
 			if svr.cfg.TCPMux {
 				fmuxCfg := fmux.DefaultConfig()
 				fmuxCfg.KeepAliveInterval = time.Duration(svr.cfg.TCPMuxKeepaliveInterval) * time.Second

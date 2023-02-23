@@ -150,9 +150,9 @@ func Execute() {
 func handleSignal(svr *client.Service, doneCh chan struct{}) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	<-ch
-	svr.GracefulClose(500 * time.Millisecond)
-	close(doneCh)
+	<-ch                                      /// 阻塞，知道收到SIGINT或SIGTERM
+	svr.GracefulClose(500 * time.Millisecond) ///服务退出
+	close(doneCh)                             //关闭通道
 }
 
 func parseClientCommonCfgFromCmd() (cfg config.ClientCommonConf, err error) {
@@ -205,6 +205,7 @@ func startService(
 	visitorCfgs map[string]config.VisitorConf,
 	cfgFile string,
 ) (err error) {
+	/// 初始化日志句柄
 	log.InitLog(cfg.LogWay, cfg.LogFile, cfg.LogLevel,
 		cfg.LogMaxDays, cfg.DisableLogColor)
 
@@ -212,12 +213,14 @@ func startService(
 		log.Trace("start frpc service for config file [%s]", cfgFile)
 		defer log.Trace("frpc service for config file [%s] stopped", cfgFile)
 	}
+	/// 创建client服务实例
 	svr, errRet := client.NewService(cfg, pxyCfgs, visitorCfgs, cfgFile)
 	if errRet != nil {
 		err = errRet
 		return
 	}
 
+	/// 创建通道 + 监控信号：监控close状态
 	closedDoneCh := make(chan struct{})
 	shouldGracefulClose := cfg.Protocol == "kcp" || cfg.Protocol == "quic"
 	// Capture the exit signal if we use kcp or quic.
@@ -227,7 +230,11 @@ func startService(
 
 	err = svr.Run()
 	if err == nil && shouldGracefulClose {
+		///阻塞， 等待
 		<-closedDoneCh
 	}
+	///  程序退出的处理流程：发送SIGINT SIGTERM, 信号处理程序收到后关闭程序， 向closedDoneCh写入数据， 执行清理工作
+	///  closedDoneCh收到写入数据后， 退出
+
 	return
 }

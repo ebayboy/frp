@@ -96,6 +96,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&dashboardTLSKeyFile, "dashboard_tls_key_file", "", "", "dashboard tls key file")
 }
 
+//cobra : 命令行工具库
 var rootCmd = &cobra.Command{
 	Use:   "frps",
 	Short: "frps is the server of frp (https://github.com/fatedier/frp)",
@@ -105,6 +106,7 @@ var rootCmd = &cobra.Command{
 			return nil
 		}
 
+		/// 解析配置
 		var cfg config.ServerCommonConf
 		var err error
 		if cfgFile != "" {
@@ -121,6 +123,7 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
+		/// 启动server
 		err = runServer(cfg)
 		if err != nil {
 			fmt.Println(err)
