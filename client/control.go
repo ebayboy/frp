@@ -322,10 +322,24 @@ func (ctl *Control) msgHandler() {
 
 // If controler is notified by closedCh, reader and writer and handler will exit
 func (ctl *Control) worker() {
+
+	/// 流程1：reader() -> msgHandler()
+	/// 流程2：msgHandler() -> writer()
+
+	/// 而 msgHandler 则从frpc里读取信息，放到 ctl.sendCh， 从 ctl.readCh 读取信息，处理之。
+	/// 1. readChan -> 处理
+	/// 2. frpc读取消息 -> sendCh
 	go ctl.msgHandler()
+
+	/// 数据流读：frps  -> frpc reader -> readChan
+	/// reader 从frps收信息，然后写到 ctl.readCh 这个 channel 里
 	go ctl.reader()
+
+	/// 数据流写：frps <-frpc writer <- sendChan
+	/// writer 从 ctl.sendCh 收信息，写到 frps
 	go ctl.writer()
 
+	/// 阻塞等待通道关闭
 	<-ctl.closedCh
 	// close related channels and wait until other goroutines done
 	close(ctl.readCh)

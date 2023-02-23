@@ -129,6 +129,7 @@ func (svr *Service) Run() error {
 
 	// login to frps
 	for {
+		/// 向frps建立tcp连接， 并验证登陆
 		conn, cm, err := svr.login()
 		if err != nil {
 			xl.Warn("login to server failed: %v", err)
@@ -141,6 +142,7 @@ func (svr *Service) Run() error {
 			util.RandomSleep(10*time.Second, 0.9, 1.1)
 		} else {
 			// login success
+			/// 登陆成功， 新建控制器并运行
 			ctl := NewControl(svr.ctx, svr.runID, conn, cm, svr.cfg, svr.pxyCfgs, svr.visitorCfgs, svr.serverUDPPort, svr.authSetter)
 			ctl.Run()
 			svr.ctlMu.Lock()
@@ -150,6 +152,8 @@ func (svr *Service) Run() error {
 		}
 	}
 
+	/// 阻塞，直到通道ClosedDoneCh关闭
+	/// 什么时候通道关闭呢？
 	go svr.keepControllerWorking()
 
 	if svr.cfg.AdminPort != 0 {
@@ -180,6 +184,7 @@ func (svr *Service) keepControllerWorking() {
 	reconnectCounts := 1
 
 	for {
+		/// 阻塞， 直到通过关闭
 		<-svr.ctl.ClosedDoneCh()
 		if atomic.LoadUint32(&svr.exit) != 0 {
 			return
