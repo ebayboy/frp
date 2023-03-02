@@ -470,6 +470,7 @@ func (svr *Service) HandleListener(l net.Listener) {
 						session.Close()
 						return
 					}
+					/// ** default goto here
 					go svr.handleConnection(ctx, stream)
 				}
 			} else {
