@@ -355,6 +355,7 @@ func (svr *Service) Run() {
 func (svr *Service) handleConnection(ctx context.Context, conn net.Conn) {
 	xl := xlog.FromContextSafe(ctx)
 
+	log.Debug("handleConnection")
 	var (
 		rawMsg msg.Message
 		err    error
@@ -371,8 +372,10 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn) {
 
 	switch m := rawMsg.(type) {
 
+	/// frpc连接frps， 先发送msg.login消息, 之后发送msg.NewWorkConn消息
 	/// type: frpc login msg
 	case *msg.Login:
+		log.Debug("msg_login")
 		/// 进行登陆校验（插件）， 校验成功注册控制器
 		// server plugin hook
 		content := &plugin.LoginContent{
@@ -396,6 +399,7 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn) {
 			conn.Close()
 		}
 	case *msg.NewWorkConn:
+		log.Debug("msg.NewWorkConn")
 		if err := svr.RegisterWorkConn(conn, m); err != nil {
 			conn.Close()
 		}
