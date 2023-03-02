@@ -372,6 +372,7 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn) {
 
 	switch m := rawMsg.(type) {
 
+	/// server接收到的消息就两种， 一种是登陆消息， 另一种是新建连接
 	/// frpc连接frps， 先发送msg.login消息, 之后发送msg.NewWorkConn消息
 	/// type: frpc login msg
 	case *msg.Login:
