@@ -65,6 +65,7 @@ func (m *Manager) Register(p Plugin) {
 	}
 }
 
+// / 调用login插件验证登陆信息， 验证成功后返回登陆对象LoginContent
 func (m *Manager) Login(content *LoginContent) (*LoginContent, error) {
 	if len(m.loginPlugins) == 0 {
 		return content, nil

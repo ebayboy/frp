@@ -348,7 +348,7 @@ func (svr *Service) Run() {
 	/// tls listener
 	go svr.HandleListener(svr.tlsListener)
 
-	/// tcp listener
+	/// ** tcp listener
 	svr.HandleListener(svr.listener)
 }
 
@@ -360,7 +360,8 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn) {
 		err    error
 	)
 
-	_ = conn.SetReadDeadline(time.Now().Add(connReadTimeout))
+	/// 读取消息
+	_ = conn.SetReadDeadline(time.Now().Add(connReadTimeout)) /// 设置读取超时时间
 	if rawMsg, err = msg.ReadMsg(conn); err != nil {
 		log.Trace("Failed to read message: %v", err)
 		conn.Close()
@@ -369,7 +370,10 @@ func (svr *Service) handleConnection(ctx context.Context, conn net.Conn) {
 	_ = conn.SetReadDeadline(time.Time{})
 
 	switch m := rawMsg.(type) {
+
+	/// type: frpc login msg
 	case *msg.Login:
+		/// 进行登陆校验（插件）， 校验成功注册控制器
 		// server plugin hook
 		content := &plugin.LoginContent{
 			Login:         *m,
@@ -465,6 +469,7 @@ func (svr *Service) HandleListener(l net.Listener) {
 					go svr.handleConnection(ctx, stream)
 				}
 			} else {
+				/// ** process tcp conn
 				svr.handleConnection(ctx, frpConn)
 			}
 		}(ctx, c)
