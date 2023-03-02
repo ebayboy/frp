@@ -115,6 +115,7 @@ func NewControl(
 }
 
 func (ctl *Control) Run() {
+	/// 消息处理worker
 	go ctl.worker()
 
 	// start all proxies
