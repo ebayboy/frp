@@ -352,6 +352,7 @@ func NewConnectionManager(ctx context.Context, cfg *config.ClientCommonConf) *Co
 	}
 }
 
+// / 做一些建立连接的前置操作， 例如quic 或 mux的一些操作
 func (cm *ConnectionManager) OpenConnection() error {
 	xl := xlog.FromContextSafe(cm.ctx)
 
@@ -430,6 +431,7 @@ func (cm *ConnectionManager) Connect() (net.Conn, error) {
 	return cm.realConnect()
 }
 
+// / 真正建立连接
 func (cm *ConnectionManager) realConnect() (net.Conn, error) {
 	xl := xlog.FromContextSafe(cm.ctx)
 	var tlsConfig *tls.Config
