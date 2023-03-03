@@ -239,20 +239,22 @@ func (ctl *Control) GetWorkConn() (workConn net.Conn, err error) {
 	var ok bool
 	// get a work connection from the pool
 	select {
-	case workConn, ok = <-ctl.workConnCh:
+	case workConn, ok = <-ctl.workConnCh: /// 通过chan获取一个workConn
 		if !ok {
-			err = frpErr.ErrCtlClosed
+			err = frpErr.ErrCtlClosed /// chan error
 			return
 		}
-		xl.Debug("get work connection from pool")
+		xl.Debug("get work connection from pool") /// goto out, not to default
 	default:
 		// no work connections available in the poll, send message to frpc to get more
+		/// sendCh发送消息给frpc， frpc建立连接， 有连接后从workConnCh读取连接
 		if err = errors.PanicToError(func() {
 			ctl.sendCh <- &msg.ReqWorkConn{}
 		}); err != nil {
 			return nil, fmt.Errorf("control is already closed")
 		}
 
+		/// 阻塞等待客户端连接， 并设置超时时间
 		select {
 		case workConn, ok = <-ctl.workConnCh:
 			if !ok {
