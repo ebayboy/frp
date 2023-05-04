@@ -1,0 +1,16 @@
+{
+    "timeRange": [
+        "2023-03-04 00:00:00",
+        "2023-03-04 23:59:59"
+    ],
+    "startTime": "2023-03-04 00:00:00",
+    "endTime": "2023-03-04 23:59:59",
+    "timeBegin": "2023-03-04 00:00:00",
+    "timeEnd": "2023-03-04 23:59:59",
+    "selectTimeType": "4"
+}&page={
+    "maxPageSize": 100,
+    "pageNo": 1,
+    "pageSize": 5,
+    "totalCount": 103
+}

@@ -156,8 +156,8 @@ func (svr *Service) Run() error {
 	/// 什么时候通道关闭呢？
 	go svr.keepControllerWorking()
 
+	// Init admin server assets
 	if svr.cfg.AdminPort != 0 {
-		// Init admin server assets
 		assets.Load(svr.cfg.AssetsDir)
 
 		address := net.JoinHostPort(svr.cfg.AdminAddr, strconv.Itoa(svr.cfg.AdminPort))
@@ -413,6 +413,7 @@ func (cm *ConnectionManager) OpenConnection() error {
 	return nil
 }
 
+// / 建立 yamux 虚拟session连接
 func (cm *ConnectionManager) Connect() (net.Conn, error) {
 	if cm.quicConn != nil {
 		stream, err := cm.quicConn.OpenStreamSync(context.Background())
@@ -421,7 +422,8 @@ func (cm *ConnectionManager) Connect() (net.Conn, error) {
 		}
 		return frpNet.QuicStreamToNetConn(stream, cm.quicConn), nil
 	} else if cm.muxSession != nil {
-		stream, err := cm.muxSession.OpenStream()
+
+		stream, err := cm.muxSession.OpenStream() //  Open == OpenStream
 		if err != nil {
 			return nil, err
 		}
@@ -431,7 +433,7 @@ func (cm *ConnectionManager) Connect() (net.Conn, error) {
 	return cm.realConnect()
 }
 
-// / 真正建立连接
+// / 真正建立 TCP + SSL 连接
 func (cm *ConnectionManager) realConnect() (net.Conn, error) {
 	xl := xlog.FromContextSafe(cm.ctx)
 	var tlsConfig *tls.Config
@@ -485,6 +487,7 @@ func (cm *ConnectionManager) realConnect() (net.Conn, error) {
 	return conn, err
 }
 
+// / 关闭yamux 虚拟session连接
 func (cm *ConnectionManager) Close() error {
 	if cm.quicConn != nil {
 		_ = cm.quicConn.CloseWithError(0, "")

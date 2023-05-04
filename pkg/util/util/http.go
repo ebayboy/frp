@@ -61,7 +61,7 @@ func CanonicalHost(host string) (string, error) {
 		}
 	}
 	// Strip trailing dot from fully qualified domain names.
-	host = strings.TrimSuffix(host, ".")
+	host = strings.TrimSuffix(host, ".") /// TODO ? www.baid.com.
 	return host, nil
 }
 
